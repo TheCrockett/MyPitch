@@ -58,6 +58,9 @@ public partial class MainViewModel : ViewModelBase
     public bool GameModeNeedDroneControl => GameMode != GameMode.ChordQuality;
     public bool GameModeNeedOctaveControl => GameMode != GameMode.ChordQuality;
     public bool GameModeNeedScaleControl => GameMode != GameMode.ChordQuality;
+    public bool ShowMidiInput =>
+        GameModeNeedScaleControl
+            && !IsWasm;
 
     private static bool RequiresStrictScaleDegreeAdherence(GameMode? mode) =>
         mode is GameMode.Melody
@@ -70,7 +73,11 @@ public partial class MainViewModel : ViewModelBase
     public Key[] Tonics => MusicTheory.Keys;
     public GameMode[] GameModes => Enum.GetValues<GameMode>();
     public ScaleMode[] ScaleModes => Enum.GetValues<ScaleMode>();
-    public IMidiPortDetails[] MidiInputDevices => MidiAccessManager.Default.Inputs.ToArray();
+    public IMidiPortDetails[] MidiInputDevices =>
+        IsWasm
+            ? Array.Empty<IMidiPortDetails>()
+            : MidiAccessManager.Default.Inputs.ToArray();
+
 
     [ObservableProperty] private bool _wideLayout;
     [ObservableProperty] private bool _shouldSelectAllDegrees = true;
@@ -100,6 +107,7 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(GameModeNeedTonicControl));
         if (newValue == GameMode.Melody || newValue == GameMode.Diatonics) ConfigureDiatonic();
         EnsureEnabledDegrees();
+        OnPropertyChanged(nameof(ShowMidiInput));
     }
 
     private void EnsureEnabledDegrees()
@@ -233,13 +241,10 @@ public partial class MainViewModel : ViewModelBase
                for (int i = e.Start; i < e.Start + e.Length; i++)
                {
                    ProcessMidiByte(e.Data[i]);
+                   Console.WriteLine(BitConverter.ToString(e.Data, e.Start, e.Length));
                }
            };
 
-           // _midiInput.MessageReceived += (sender, e) =>
-           // {
-           //     Console.WriteLine(BitConverter.ToString(e.Data, e.Start, e.Length));
-           // };
         }
         catch (Exception ex)
         {
@@ -332,6 +337,12 @@ private void ProcessMidiByte(byte value)
         {
             AnswerMidiNote(noteNumber);
         }
+        else if (messageType == 0x80 ||
+                 (messageType == 0x90 && velocity == 0))
+        {
+            ReleaseMidiNote(noteNumber);
+        }
+
     }
 
 

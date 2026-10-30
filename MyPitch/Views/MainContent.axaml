@@ -263,8 +263,8 @@
                     Content="Folk Database"
                     IsVisible="{Binding IsFolkMode}" />
                 <ComboBox
-                    shadui:ControlAssist.Label="MIDI Keyboard Input"
-                    IsVisible="{Binding GameModeNeedScaleControl}"
+                    shadui:ControlAssist.Label="(Optional) MIDI Keyboard Input"
+		    IsVisible="{Binding ShowMidiInput}"
                     ItemsSource="{Binding MidiInputDevices}"
                     SelectedItem="{Binding SelectedMidiInputDevice, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
