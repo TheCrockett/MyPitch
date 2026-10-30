@@ -241,7 +241,7 @@ public partial class MainViewModel : ViewModelBase
                for (int i = e.Start; i < e.Start + e.Length; i++)
                {
                    ProcessMidiByte(e.Data[i]);
-                   Console.WriteLine(BitConverter.ToString(e.Data, e.Start, e.Length));
+               //    Console.WriteLine(BitConverter.ToString(e.Data, e.Start, e.Length));
                }
            };
 
